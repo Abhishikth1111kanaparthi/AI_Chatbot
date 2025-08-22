@@ -1,96 +1,53 @@
 import streamlit as st
-from streamlit_webrtc import webrtc_streamer, AudioProcessorBase, WebRtcMode
 import speech_recognition as sr
 from gtts import gTTS
 import google.generativeai as genai
-import av
-import soundfile as sf
-import numpy as np
-import time
+import tempfile
 
-# Configure Gemini API
-genai.configure(api_key="YOUR_API_KEY_HERE")  # <-- replace with your Gemini API key
+genai.configure(api_key="AIzaSyAIrU13BmlwB8NwX9PpNZ411nwh7J884dw")
 
-# Streamlit page setup
 st.set_page_config(page_title="Voice Chat with Gemini", page_icon="🎙️")
 st.title("🎙️ AI Chatbot")
-st.write("Click the button, speak for 5 seconds, and hear Gemini respond!")
+st.write("Speak into your microphone and hear Chatbot respond!")
 
-# Maintain chat history
 if "history" not in st.session_state:
-    st.session_state.history = []  # list of (user_text, bot_text)
+    st.session_state.history = []
 
-# Speech recognition instance
-recognizer = sr.Recognizer()
+# Browser microphone capture
+audio_data = st.audio_input("🎤 Record 5s Audio")
 
-# Audio processor to collect mic input
-class AudioProcessor(AudioProcessorBase):
-    def __init__(self):
-        self.frames = []
+if audio_data is not None:
+    st.info("Processing your voice...")
 
-    def recv_audio(self, frame: av.AudioFrame) -> av.AudioFrame:
-        audio = frame.to_ndarray()
-        self.frames.append(audio)
-        return frame
+    # Save the browser audio to a temp WAV file
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as tmp_file:
+        tmp_file.write(audio_data.getvalue())
+        tmp_path = tmp_file.name
 
-    def get_audio_data(self):
-        if not self.frames:
-            return None
-        audio_data = np.concatenate(self.frames, axis=0).astype("int16")
-        self.frames = []
-        return audio_data
+    # Speech-to-Text
+    r = sr.Recognizer()
+    with sr.AudioFile(tmp_path) as source:
+        audio_content = r.record(source)
+        try:
+            user_text = r.recognize_google(audio_content)
+            st.write("**You said:**", user_text)
+        except Exception as e:
+            st.error("Speech recognition failed: " + str(e))
+            user_text = None
 
-# Button to record for 5 seconds
-if st.button("🎤 Record 5 Seconds"):
-    st.info("Recording... Speak now!")
-    ctx = webrtc_streamer(
-        key="audio-only",
-        mode=WebRtcMode.SENDONLY,
-        audio_processor_factory=AudioProcessor,
-        media_stream_constraints={"audio": True, "video": False},
-    )
+    if user_text:
+        # Gemini response
+        model = genai.GenerativeModel("gemini-2.5-flash")
+        response = model.generate_content(user_text)
+        bot_reply = response.text
+        st.write("**Gemini says:**", bot_reply)
 
-    # Wait for 5 seconds while recording
-    start_time = time.time()
-    while time.time() - start_time < 5:
-        time.sleep(0.1)
-    st.success("Recording complete!")
+        # Text-to-Speech
+        tts = gTTS(bot_reply)
+        tts.save("reply.mp3")
+        st.audio("reply.mp3", format="audio/mp3")
 
-    # Extract audio and stop stream
-    if ctx.audio_processor:
-        audio_data = ctx.audio_processor.get_audio_data()
-        ctx.stop()  # stop the WebRTC stream
-
-        if audio_data is None:
-            st.warning("No audio captured. Please try again.")
-        else:
-            # Save to WAV for speech recognition
-            sf.write("input.wav", audio_data, 16000)
-
-            # Speech-to-text using Google Speech Recognition
-            with sr.AudioFile("input.wav") as source:
-                audio = recognizer.record(source)
-                try:
-                    user_text = recognizer.recognize_google(audio)
-                    st.write("**You said:**", user_text)
-                except Exception as e:
-                    st.error("Speech recognition failed: " + str(e))
-                    user_text = None
-
-            if user_text:
-                # Send user text to Gemini API
-                model = genai.GenerativeModel("gemini-2.5-flash")
-                response = model.generate_content(user_text)
-                bot_reply = response.text
-                st.write("**Gemini says:**", bot_reply)
-
-                # Convert bot reply to speech
-                tts = gTTS(bot_reply)
-                tts.save("reply.mp3")
-                st.audio("reply.mp3", format="audio/mp3")
-
-                # Save conversation
-                st.session_state.history.append((user_text, bot_reply))
+        st.session_state.history.append((user_text, bot_reply))
 
 # Display chat history
 if st.session_state.history:
