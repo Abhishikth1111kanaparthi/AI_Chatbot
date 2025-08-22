@@ -14,18 +14,18 @@ Features
 📝 Maintains a chat history in the app
 
 
-How it works
+# How it works
 
-User clicks the "Record Audio" button
+1.User clicks the "Record Audio" button
 
-Browser microphone captures your voice
+2.Browser microphone captures your voice
 
-Speech is converted to text (Speech-to-Text)
+3.Speech is converted to text (Speech-to-Text)
 
-Text is sent to Gemini AI API
+4.Text is sent to Gemini AI API
 
-Gemini generates a response
+5.Gemini generates a response
 
-Response is converted back to speech and played
+6.Response is converted back to speech and played
 
-Both question and answer are saved in chat history
+# Both question and answer are saved in chat history
