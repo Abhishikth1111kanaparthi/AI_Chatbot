@@ -1,7 +1,8 @@
 streamlit
 streamlit-webrtc
-av
-soundfile
 SpeechRecognition
+soundfile
 gTTS
 google-generativeai
+av
+numpy
