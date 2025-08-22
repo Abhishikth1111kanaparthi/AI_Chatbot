@@ -1,0 +1,6 @@
+streamlit
+sounddevice
+soundfile
+SpeechRecognition
+gTTS
+google-generativeai
