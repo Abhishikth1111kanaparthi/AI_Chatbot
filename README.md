@@ -28,4 +28,4 @@ Features
 
 6.Response is converted back to speech and played
 
-# Both question and answer are saved in chat history
+ Both question and answer are saved in chat history
