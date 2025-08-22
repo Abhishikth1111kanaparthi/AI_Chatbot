@@ -1,5 +1,6 @@
 streamlit
-sounddevice
+streamlit-webrtc
+av
 soundfile
 SpeechRecognition
 gTTS
