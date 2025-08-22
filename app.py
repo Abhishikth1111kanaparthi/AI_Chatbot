@@ -42,7 +42,7 @@ if audio_data is not None:
         model = genai.GenerativeModel("gemini-2.5-flash") # using gemini 2.5 flash model 
         response = model.generate_content(user_text)
         bot_reply = response.text
-        st.write("**Gemini says:**", bot_reply)
+        st.write("**ChatBot says:**", bot_reply)
 
         # Text-to-Speech TTS conversion
         tts = gTTS(bot_reply)
@@ -58,4 +58,5 @@ if st.session_state.history:
         st.markdown(f"**You:** {q}")
         st.markdown(f"**Gemini:** {a}")
         st.markdown("---")
+
 
