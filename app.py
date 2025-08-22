@@ -8,8 +8,8 @@ import tempfile
 genai.configure(api_key="AIzaSyAIrU13BmlwB8NwX9PpNZ411nwh7J884dw")
 
 # desgining the web page 
-st.set_page_config(page_title="Voice Chat with Gemini", page_icon="🎙️") # page title 
-st.title("🎙️ AI Chatbot")
+st.set_page_config(page_title="Voice Chat with ChatBot(Gemini)", page_icon="🎙️🎙️🎙️") # page title 
+st.title("🎙️🎙️AI Chatbot🎙️🎙️")
 st.write("Speak into your microphone and hear Chatbot respond!")
 
 if "history" not in st.session_state: # saving chat history 
@@ -58,5 +58,6 @@ if st.session_state.history:
         st.markdown(f"**You:** {q}")
         st.markdown(f"**Gemini:** {a}")
         st.markdown("---")
+
 
 
