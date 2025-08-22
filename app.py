@@ -6,6 +6,7 @@ import google.generativeai as genai
 import av
 import soundfile as sf
 import numpy as np
+import time
 
 # Configure Gemini API
 genai.configure(api_key="YOUR_API_KEY_HERE")  # <-- replace with your Gemini API key
@@ -13,7 +14,7 @@ genai.configure(api_key="YOUR_API_KEY_HERE")  # <-- replace with your Gemini API
 # Streamlit page setup
 st.set_page_config(page_title="Voice Chat with Gemini", page_icon="🎙️")
 st.title("🎙️ AI Chatbot")
-st.write("Speak into your microphone and hear the chatbot respond!")
+st.write("Click the button, speak for 5 seconds, and hear Gemini respond!")
 
 # Maintain chat history
 if "history" not in st.session_state:
@@ -39,20 +40,29 @@ class AudioProcessor(AudioProcessorBase):
         self.frames = []
         return audio_data
 
-# WebRTC streamer (audio only)
-ctx = webrtc_streamer(
-    key="audio-only",
-    mode=WebRtcMode.SENDONLY,  # only send mic to server
-    audio_processor_factory=AudioProcessor,
-    media_stream_constraints={"audio": True, "video": False},  # disable camera
-)
+# Button to record for 5 seconds
+if st.button("🎤 Record 5 Seconds"):
+    st.info("Recording... Speak now!")
+    ctx = webrtc_streamer(
+        key="audio-only",
+        mode=WebRtcMode.SENDONLY,
+        audio_processor_factory=AudioProcessor,
+        media_stream_constraints={"audio": True, "video": False},
+    )
 
-# Button to process recorded speech
-if ctx.audio_processor:
-    if st.button("Convert Speech to Text & Ask Gemini"):
+    # Wait for 5 seconds while recording
+    start_time = time.time()
+    while time.time() - start_time < 5:
+        time.sleep(0.1)
+    st.success("Recording complete!")
+
+    # Extract audio and stop stream
+    if ctx.audio_processor:
         audio_data = ctx.audio_processor.get_audio_data()
+        ctx.stop()  # stop the WebRTC stream
+
         if audio_data is None:
-            st.warning("No audio captured. Please speak and try again.")
+            st.warning("No audio captured. Please try again.")
         else:
             # Save to WAV for speech recognition
             sf.write("input.wav", audio_data, 16000)
