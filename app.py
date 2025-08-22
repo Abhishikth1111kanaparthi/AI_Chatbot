@@ -9,6 +9,7 @@ import google.generativeai as genai
 
 genai.configure(api_key="AIzaSyAIrU13BmlwB8NwX9PpNZ411nwh7J884dw")  # getting api
 
+sd.default.device = (0, 3)  # (input_index, output_index)
 
 # Streamlit page setup
 st.set_page_config(page_title="Voice Chat with Gemini", page_icon="🎙️") # PAGE TITLE
@@ -65,5 +66,6 @@ if st.session_state.history:
         st.markdown(f"**You:** {q}")
         st.markdown(f"**Gemini:** {a}")
         st.markdown("---")
+
 
 
